@@ -1,7 +1,13 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 function IndexPopup() {
-  const [data, setData] = useState("")
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    window.addEventListener("message", (event) => {
+      console.log("EVAL output: " + event.data)
+    })
+  }, [])
 
   return (
     <div
@@ -10,17 +16,20 @@ function IndexPopup() {
         flexDirection: "column",
         padding: 16
       }}>
-      <h2>
-        Welcome to your{" "}
-        <a href="https://www.plasmo.com" target="_blank">
-          Plasmo
-        </a>{" "}
-        Extension!
-      </h2>
-      <input onChange={(e) => setData(e.target.value)} value={data} />
-      <a href="https://docs.plasmo.com" target="_blank">
-        View Docs
-      </a>
+      <button
+        onClick={() => {
+          iframeRef.current.contentWindow.postMessage("10 + 20", "*");
+        }}>
+        Trigger iframe eval
+      </button>
+      <button
+        onClick={() => {
+          chrome.runtime.sendMessage('', () => null);
+      }}>
+        Open a sandbox popup, but it would not stay as always on top
+      </button>
+      <iframe src="sandbox.html" ref={iframeRef} style={{ display: "none" }} />
+      <iframe src="sandboxes/test.html" />
     </div>
   )
 }
